@@ -1,0 +1,9 @@
+# Large raw media & photogrammetry build databases
+DJI_0001_remuxed.mp4
+drone_frames/
+colmap_db.db
+colmap_sparse/
+colmap_text/
+
+# OS files
+.DS_Store

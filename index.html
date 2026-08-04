@@ -1,0 +1,359 @@
+<!-- 
+  3D TERRAIN EXPLORER & REAL-TIME TEXTURE ALIGNMENT TOOL
+  Version: v1.2.0
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Terrain Walkthrough & Texture Alignment Tool (v1.2.0)</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Three.js and OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+  <!-- Main 3D Canvas -->
+  <div id="canvas-container"></div>
+
+  <!-- Corner Version Badge -->
+  <div class="version-badge-gui">v1.2.0</div>
+
+  <!-- Top Navigation & Title Bar -->
+  <header class="glass-header">
+    <div class="header-title">
+      <div class="logo-icon">🌐</div>
+      <div>
+        <h1>3D Terrain Explorer <span class="version-sub">v1.2.0</span></h1>
+        <span class="subtitle">NOAA CUDEM 1/9 Arc-Sec DEM × High-Res Aerial Map</span>
+      </div>
+    </div>
+
+    <div class="header-center-badges">
+      <span class="badge" id="mode-badge">🚶 Walk Mode</span>
+      <span class="badge badge-accent" id="stats-badge">Elev: 0.0m | Slope: 0°</span>
+    </div>
+
+    <div class="header-actions">
+      <button id="btn-toggle-mode" class="btn btn-primary">
+        <span class="icon">🔄</span> Switch to Fly/Orbit View
+      </button>
+      <button id="btn-toggle-tools" class="btn btn-secondary">
+        <span class="icon">⚙️</span> Alignment Tools
+      </button>
+    </div>
+  </header>
+
+  <!-- Walk Mode Pointer Lock Overlay / Instructions -->
+  <div id="walk-overlay" class="walk-overlay">
+    <div class="overlay-card glass-card">
+      <h2>🚶 Walk Mode Active</h2>
+      <p>Click anywhere on the terrain to lock cursor for mouse-look!</p>
+      <div class="key-bindings">
+        <div class="key-group"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>Move</span></div>
+        <div class="key-group"><kbd>Shift</kbd><span>Run</span></div>
+        <div class="key-group"><kbd>Space</kbd><span>Jump</span></div>
+        <div class="key-group"><kbd>Esc</kbd><span>Unlock Cursor</span></div>
+      </div>
+      <button id="btn-start-walk" class="btn btn-lg btn-primary">Click to Control Camera</button>
+    </div>
+  </div>
+
+  <!-- Interactive Alignment & Scaling Panel (Floating Glass Panel) -->
+  <aside id="alignment-panel" class="glass-panel sidebar">
+    <div class="panel-header">
+      <h3>📐 Texture Alignment & Scaling</h3>
+      <button id="btn-close-panel" class="icon-btn" title="Close Panel">✕</button>
+    </div>
+
+    <div class="panel-body">
+      <!-- Quick Info / Help -->
+      <div class="info-box">
+        <p>Align high-res satellite screenshot with DEM heightmap. Adjust offsets, scale, and rotation to match shorelines and landmarks.</p>
+      </div>
+
+      <!-- Mode / Visualization Toggles -->
+      <div class="control-group">
+        <label class="group-title">Display & Blending</label>
+        
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Texture Opacity</span>
+            <span id="val-opacity">100%</span>
+          </div>
+          <input type="range" id="slider-opacity" min="0" max="1" step="0.01" value="1">
+        </div>
+
+        <div class="toggle-row">
+          <label class="checkbox-container">
+            <input type="checkbox" id="chk-wireframe">
+            <span class="checkmark"></span>
+            Wireframe Overlay
+          </label>
+          <label class="checkbox-container">
+            <input type="checkbox" id="chk-elevation-color">
+            <span class="checkmark"></span>
+            DEM Elevation Tint
+          </label>
+        </div>
+      </div>
+
+      <!-- Terrain Exaggeration -->
+      <div class="control-group">
+        <label class="group-title">DEM Height Exaggeration</label>
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Height Scale</span>
+            <span id="val-height-scale">1.5x</span>
+          </div>
+          <input type="range" id="slider-height-scale" min="0.1" max="5.0" step="0.1" value="1.5">
+        </div>
+      </div>
+
+      <!-- 3D Gaussian Splat Layer -->
+      <div class="control-group">
+        <label class="group-title">✨ 3D Gaussian Splat Layer</label>
+        <div class="toggle-row mb-2">
+          <label class="checkbox-container">
+            <input type="checkbox" id="chk-splat-layer">
+            <span class="checkmark"></span>
+            Enable Splat Overlay
+          </label>
+        </div>
+
+        <div class="btn-stack mb-2">
+          <label for="input-splat-file" class="btn btn-secondary btn-block" style="cursor: pointer;">
+            <span class="icon">📂</span> Load .splat / .ply File...
+          </label>
+          <input type="file" id="input-splat-file" accept=".splat,.ply" style="display: none;">
+        </div>
+
+        <!-- Scale Controls -->
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Splat Scale (0.1x – 1000x)</span>
+            <span id="val-splat-scale">1.0x</span>
+          </div>
+          <div class="slider-row-with-num">
+            <input type="range" id="slider-splat-scale" min="0.1" max="1000.0" step="0.5" value="1.0">
+            <input type="number" id="num-splat-scale" class="input-num" min="0.1" max="5000" step="0.5" value="1.0">
+          </div>
+        </div>
+
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Particle Size</span>
+            <span id="val-splat-psize">0.18</span>
+          </div>
+          <div class="slider-row-with-num">
+            <input type="range" id="slider-splat-psize" min="0.01" max="2.0" step="0.01" value="0.18">
+            <input type="number" id="num-splat-psize" class="input-num" min="0.01" max="10" step="0.01" value="0.18">
+          </div>
+        </div>
+
+        <!-- Decoupled 3-Axis Rotations -->
+        <label class="group-title mt-2">Splat 3D Rotation (Decoupled)</label>
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>World Yaw (Compass Y)</span>
+            <span id="val-splat-rot-y">0°</span>
+          </div>
+          <div class="slider-row-with-num">
+            <input type="range" id="slider-splat-rot-y" min="-180" max="180" step="1" value="0">
+            <input type="number" id="num-splat-rot-y" class="input-num" min="-180" max="180" step="1" value="0">
+          </div>
+        </div>
+
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Tilt / Flip Pitch (Local X)</span>
+            <span id="val-splat-rot-x">0°</span>
+          </div>
+          <div class="slider-row-with-num">
+            <input type="range" id="slider-splat-rot-x" min="-180" max="180" step="1" value="0">
+            <input type="number" id="num-splat-rot-x" class="input-num" min="-180" max="180" step="1" value="0">
+          </div>
+        </div>
+
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Bank Roll (Local Z)</span>
+            <span id="val-splat-rot-z">0°</span>
+          </div>
+          <div class="slider-row-with-num">
+            <input type="range" id="slider-splat-rot-z" min="-180" max="180" step="1" value="0">
+            <input type="number" id="num-splat-rot-z" class="input-num" min="-180" max="180" step="1" value="0">
+          </div>
+        </div>
+
+        <!-- 3-Axis Position -->
+        <label class="group-title mt-2">Splat Position (X / Y / Z)</label>
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Position X (East/West)</span>
+            <span id="val-splat-pos-x">339 m</span>
+          </div>
+          <div class="slider-row-with-num">
+            <input type="range" id="slider-splat-pos-x" min="-500" max="1500" step="1" value="339">
+            <input type="number" id="num-splat-pos-x" class="input-num" min="-2000" max="2000" step="1" value="339">
+          </div>
+        </div>
+
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Position Y (Height)</span>
+            <span id="val-splat-pos-y">10.0 m</span>
+          </div>
+          <div class="slider-row-with-num">
+            <input type="range" id="slider-splat-pos-y" min="-300" max="500" step="0.5" value="10.0">
+            <input type="number" id="num-splat-pos-y" class="input-num" min="-1000" max="1000" step="0.5" value="10.0">
+          </div>
+        </div>
+
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Position Z (North/South)</span>
+            <span id="val-splat-pos-z">322 m</span>
+          </div>
+          <div class="slider-row-with-num">
+            <input type="range" id="slider-splat-pos-z" min="-500" max="1500" step="1" value="322">
+            <input type="number" id="num-splat-pos-z" class="input-num" min="-2000" max="2000" step="1" value="322">
+          </div>
+        </div>
+
+        <!-- Quick Transform Actions -->
+        <div class="btn-group-row mt-2">
+          <button class="btn btn-sm" id="btn-splat-flip-x" title="Flip Pitch 180°">🔄 Flip 180°</button>
+          <button class="btn btn-sm" id="btn-splat-snap-ground" title="Snap to Ground Elevation">⛰️ Snap Ground</button>
+          <button class="btn btn-sm" id="btn-splat-center" title="Center on Map">🎯 Center</button>
+          <button class="btn btn-sm" id="btn-splat-reset" title="Reset Splat Transform">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- Texture Scale -->
+      <div class="control-group">
+        <label class="group-title">Texture Scale</label>
+
+        <div class="toggle-row mb-2">
+          <label class="checkbox-container">
+            <input type="checkbox" id="chk-lock-aspect" checked>
+            <span class="checkmark"></span>
+            Lock Aspect Ratio
+          </label>
+        </div>
+
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Scale X</span>
+            <span id="val-scale-x">1.000</span>
+          </div>
+          <input type="range" id="slider-scale-x" min="0.2" max="3.0" step="0.002" value="1.0">
+        </div>
+
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Scale Y</span>
+            <span id="val-scale-y">1.000</span>
+          </div>
+          <input type="range" id="slider-scale-y" min="0.2" max="3.0" step="0.002" value="1.0">
+        </div>
+      </div>
+
+      <!-- Texture Offset (Pan) -->
+      <div class="control-group">
+        <label class="group-title">Texture Offset (Position)</label>
+        
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Offset X (East/West)</span>
+            <span id="val-offset-x">0.0000</span>
+          </div>
+          <input type="range" id="slider-offset-x" min="-0.5" max="0.5" step="0.0005" value="0">
+        </div>
+
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Offset Y (North/South)</span>
+            <span id="val-offset-y">0.0000</span>
+          </div>
+          <input type="range" id="slider-offset-y" min="-0.5" max="0.5" step="0.0005" value="0">
+        </div>
+
+        <!-- D-Pad Nudge Buttons -->
+        <div class="dpad-container">
+          <span class="dpad-label">Fine Nudge:</span>
+          <div class="dpad-grid">
+            <button class="nudge-btn" id="nudge-up" title="Nudge Up (I)">▲</button>
+            <button class="nudge-btn" id="nudge-left" title="Nudge Left (J)">◀</button>
+            <button class="nudge-btn" id="nudge-center" title="Center Offset">●</button>
+            <button class="nudge-btn" id="nudge-right" title="Nudge Right (L)">▶</button>
+            <button class="nudge-btn" id="nudge-down" title="Nudge Down (K)">▼</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Texture Rotation -->
+      <div class="control-group">
+        <label class="group-title">Texture Rotation</label>
+        <div class="slider-row">
+          <div class="label-with-val">
+            <span>Angle</span>
+            <span id="val-rotation">0.0°</span>
+          </div>
+          <input type="range" id="slider-rotation" min="-180" max="180" step="0.1" value="0">
+        </div>
+        <div class="btn-group-row">
+          <button class="btn btn-sm" id="btn-rot-ccw">↺ -1°</button>
+          <button class="btn btn-sm" id="btn-rot-cw">↻ +1°</button>
+          <button class="btn btn-sm" id="btn-rot-zero">0°</button>
+        </div>
+      </div>
+
+      <!-- Presets & Export/Save Actions -->
+      <div class="control-group">
+        <label class="group-title">Alignment Actions</label>
+        <div class="btn-stack">
+          <button id="btn-save-config" class="btn btn-success btn-block">
+            <span class="icon">💾</span> Save & Export Alignment JSON
+          </button>
+          <button id="btn-load-config" class="btn btn-secondary btn-block">
+            <span class="icon">📂</span> Load Saved Alignment
+          </button>
+          <button id="btn-reset-alignment" class="btn btn-danger-outline btn-block">
+            <span class="icon">↺</span> Reset Alignment
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Position HUD & Compass -->
+  <div class="hud-container">
+    <!-- Minimap Radar -->
+    <div class="minimap-box glass-card">
+      <div class="minimap-title">MAP RADAR</div>
+      <canvas id="minimap-canvas" width="140" height="140"></canvas>
+    </div>
+
+    <!-- Live Telemetry Stats -->
+    <div class="telemetry-box glass-card">
+      <div class="stat-row"><span>Position X:</span> <strong id="tele-x">0.0 m</strong></div>
+      <div class="stat-row"><span>Position Z:</span> <strong id="tele-z">0.0 m</strong></div>
+      <div class="stat-row"><span>Ground Elev:</span> <strong id="tele-elev">0.0 m</strong></div>
+      <div class="stat-row"><span>Heading:</span> <strong id="tele-heading">0° N</strong></div>
+      <div class="stat-row"><span>Speed:</span> <strong id="tele-speed">0.0 km/h</strong></div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast" class="toast hidden">Config saved successfully!</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
