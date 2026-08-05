@@ -1,6 +1,6 @@
 /**
  * 3D TERRAIN EXPLORER & REAL-TIME TEXTURE ALIGNMENT TOOL
- * Version: v1.5.1
+ * Version: v1.6.0
  * Built with Three.js & Soft Radial Gaussian Splatting
  */
 
@@ -145,6 +145,7 @@ function initThree() {
   orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
   orbitControls.enableDamping = true;
   orbitControls.dampingFactor = 0.05;
+  orbitControls.screenSpacePanning = false; // Lock panning strictly to horizontal base X-Z ground plane
   orbitControls.maxPolarAngle = Math.PI / 2 - 0.01; // don't go below ground
   orbitControls.target.set(centerX, 20, centerZ);
   orbitControls.enabled = (state.mode === 'fly');
@@ -416,6 +417,26 @@ function setupNavigationEvents() {
   canvas.addEventListener('click', () => {
     if (state.mode === 'walk') {
       canvas.requestPointerLock();
+    }
+  });
+
+  // Double-click to set OrbitControls target directly on base terrain plane
+  canvas.addEventListener('dblclick', (e) => {
+    if (state.mode !== 'fly' || !orbitControls || !terrainMesh) return;
+    const mouse = new THREE.Vector2(
+      (e.clientX / window.innerWidth) * 2 - 1,
+      -(e.clientY / window.innerHeight) * 2 + 1
+    );
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, camera);
+
+    // Raycast strictly against base terrain mesh (ignoring splat point cloud)
+    const intersects = raycaster.intersectObject(terrainMesh);
+    if (intersects.length > 0) {
+      const hitPt = intersects[0].point;
+      orbitControls.target.copy(hitPt);
+      orbitControls.update();
+      showToast(`Orbit centered on base plane (${Math.round(hitPt.x)}, ${Math.round(hitPt.z)})`);
     }
   });
 
@@ -1115,8 +1136,11 @@ function parseAndCreateSplatMesh(buffer, filename) {
     return;
   }
 
-  const positions = new Float32Array(numSplats * 3);
-  const colors = new Float32Array(numSplats * 3);
+  // Pass 1: Compute statistics for Y coordinates to filter stray floating sky noise
+  let sumY = 0, sumY2 = 0;
+  const rawX = new Float32Array(numSplats);
+  const rawY = new Float32Array(numSplats);
+  const rawZ = new Float32Array(numSplats);
   const dataView = new DataView(buffer);
 
   for (let i = 0; i < numSplats; i++) {
@@ -1124,19 +1148,38 @@ function parseAndCreateSplatMesh(buffer, filename) {
     const x = dataView.getFloat32(off, true);
     const y = dataView.getFloat32(off + 4, true);
     const z = dataView.getFloat32(off + 8, true);
-
-    positions[i * 3] = x;
-    positions[i * 3 + 1] = y;
-    positions[i * 3 + 2] = z;
-
-    const r = bytes[off + 24] / 255;
-    const g = bytes[off + 25] / 255;
-    const b = bytes[off + 26] / 255;
-
-    colors[i * 3] = r;
-    colors[i * 3 + 1] = g;
-    colors[i * 3 + 2] = b;
+    rawX[i] = x;
+    rawY[i] = y;
+    rawZ[i] = z;
+    sumY += y;
+    sumY2 += y * y;
   }
+
+  const meanY = sumY / numSplats;
+  const varY = Math.max(0, (sumY2 / numSplats) - (meanY * meanY));
+  const stdY = Math.sqrt(varY);
+
+  // Pass 2: Build position & color buffers, filtering out extreme floating sky outliers (> 2.8 * stddev)
+  const validPositions = [];
+  const validColors = [];
+
+  for (let i = 0; i < numSplats; i++) {
+    const y = rawY[i];
+    // Reject stray floating sky splats high in the air
+    if (Math.abs(y - meanY) > 2.8 * stdY) continue;
+
+    const off = i * 32;
+    validPositions.push(rawX[i], y, rawZ[i]);
+    validColors.push(
+      bytes[off + 24] / 255,
+      bytes[off + 25] / 255,
+      bytes[off + 26] / 255
+    );
+  }
+
+  const cleanNumSplats = validPositions.length / 3;
+  const positions = new Float32Array(validPositions);
+  const colors = new Float32Array(validColors);
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -1176,6 +1219,9 @@ function parseAndCreateSplatMesh(buffer, filename) {
 
   splatMesh = new THREE.Points(geo, mat);
 
+  // Disable raycasting on splats so panning/navigation strictly anchors to base terrain plane
+  splatMesh.raycast = function() {};
+
   // Build Decoupled 3-Tier Pivot Hierarchy
   if (splatPivot) scene.remove(splatPivot);
   splatPivot = new THREE.Group();
@@ -1195,7 +1241,7 @@ function parseAndCreateSplatMesh(buffer, filename) {
   state.showSplatLayer = true;
   const chkSplat = document.getElementById('chk-splat-layer');
   if (chkSplat) chkSplat.checked = true;
-  showToast(`Loaded ${numSplats.toLocaleString()} 3D Gaussians!`);
+  showToast(`Loaded ${cleanNumSplats.toLocaleString()} 3D Gaussians (base plane locked)!`);
 }
 
 function updateSplatTransform() {

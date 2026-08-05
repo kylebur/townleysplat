@@ -1,6 +1,6 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v1.5.1`  
+**Version**: `v1.6.0`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
 **Live GitHub Pages Demo (Editor)**: [https://kylebur.github.io/townleysplat/index.html](https://kylebur.github.io/townleysplat/index.html)  
@@ -39,8 +39,12 @@ python3 -m http.server 8080
 
 ## 📝 Change Log
 
-### `v1.5.1` - 2026-08-05
-- **Completed**: High-Density 5 FPS Photogrammetry Reconstruction (`process_high_density_photogrammetry.py`). Reconstructed **655,186 high-density 3D Gaussian Splats** (19.99 MB binary buffer) across 1,636 registered keyframes (99.9% camera coverage).
+### `v1.6.0` - 2026-08-05
+- **Fixed**: Locked OrbitControls panning strictly to the horizontal base plane (`screenSpacePanning = false`), preventing right-click panning from tilting off into mid-air.
+- **Fixed**: Disabled raycasting on `splatMesh` so mouse navigation interactions and double-clicking target the base ground terrain mesh exclusively.
+- **Added**: Double-click canvas listener to seamlessly recenter the orbit target on any double-clicked terrain ground location.
+- **Added**: Statistical 2-pass outlier noise filter during `.splat` loading, stripping high-altitude floating sky noise splats ($> 2.8 \sigma_y$).
+
 
 
 
