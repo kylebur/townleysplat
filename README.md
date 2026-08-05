@@ -1,7 +1,8 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v1.6.1`  
+**Version**: `v1.7.0`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
+**Live Aholo 3DGS Engine**: [https://kylebur.github.io/townleysplat/aholo.html](https://kylebur.github.io/townleysplat/aholo.html)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
 **Live GitHub Pages Demo (Editor)**: [https://kylebur.github.io/townleysplat/index.html](https://kylebur.github.io/townleysplat/index.html)  
 
@@ -14,12 +15,11 @@
 
 ## ✨ Features
 
+- **✨ Aholo 3DGS Spatial Engine (`aholo.html`)**: Parallel standalone web app rendering the 655,186 3D Gaussian Splat model and DEM terrain elevation using high-performance WebGL 3DGS shaders, real-time FPS spatial metrics, and ground-anchored navigation.
 - **🚁 200 ft Flyover Presentation Mode (`viewer.html`)**: Read-only presentation mode defaulting to a 200 ft altitude flyover view, 1.0x physical height scale, and active 3D Gaussian Splat drone layer.
 - **🚶 Interactive Walk Mode (`index.html`)**: First-person ground-level walkthrough at 1:1 human scale with Arrow/WASD controls, mouse-look pointer lock, jump physics, and bilinear elevation ground collision.
 - **📐 Real-Time Texture Alignment HUD**: Interactive matrix transform controls (Scale X/Y, Offset X/Y, Rotation, Opacity, Wireframe, DEM Elevation Tint).
-- **✨ 3D Gaussian Splatting Overlay**: Integrated 3D drone photogrammetry point cloud generated via COLMAP Structure-from-Motion (SfM) from 4K drone flight video (`DJI_0001_remuxed.mp4`).
 - **🕹️ Decoupled 6-DOF Pivot Hierarchy**: 3-tier pivot hierarchy (`splatPivot` -> `splatYawGroup` -> `splatPitchGroup` -> `splatRollGroup` -> `splatMesh`) eliminating Euler gimbal coupling for independent Compass Yaw, Tilt Pitch, and Bank Roll.
-- **💾 Alignment Persistence**: Exports and auto-loads `terrain_alignment_config.json` across browser sessions.
 
 ---
 
@@ -32,6 +32,7 @@ python3 -m http.server 8080
 ```
 
 ### Access Points
+- **Aholo 3DGS Viewer Engine**: [http://localhost:8080/aholo.html](http://localhost:8080/aholo.html)
 - **Read-Only 200 ft Flyover View**: [http://localhost:8080/viewer.html](http://localhost:8080/viewer.html)
 - **Alignment & Controls Editor**: [http://localhost:8080/index.html](http://localhost:8080/index.html)
 
@@ -39,8 +40,9 @@ python3 -m http.server 8080
 
 ## 📝 Change Log
 
-### `v1.6.1` - 2026-08-05
-- **Fixed**: Anchored `orbitControls.target.y` strictly to the DEM ground surface elevation (`getTerrainHeightAt(targetX, targetZ)`), eliminating phantom mid-air anchor points and restoring smooth ground-level zooming and right-click slewing.
+### `v1.7.0` - 2026-08-05
+- **Added**: Built parallel standalone **Aholo 3DGS Spatial Web Engine** (`aholo.html` & `aholo.js`), rendering the 655,186 3D Gaussian Splat model and DEM elevation data with real-time FPS performance monitoring, glassmorphic HUD spatial metrics, and base-plane ground-locked navigation.
+
 
 
 
