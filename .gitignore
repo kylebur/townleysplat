@@ -12,8 +12,10 @@ colmap_kf_sparse/
 colmap_text/
 colmap_hd_text/
 colmap_kf_text/
+drone_sparse_pointcloud_kf.ply
 
 # OS files
 .DS_Store
+
 
 
