@@ -1,6 +1,6 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v1.2.2`  
+**Version**: `v1.2.4`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
 **Live GitHub Pages Demo (Editor)**: [https://kylebur.github.io/townleysplat/index.html](https://kylebur.github.io/townleysplat/index.html)  
@@ -38,6 +38,12 @@ python3 -m http.server 8080
 ---
 
 ## 📝 Change Log
+
+### `v1.2.4` - 2026-08-04
+- **Added**: COLMAP crash recovery detection & database audit script in `process_hd_photogrammetry.py`.
+- **Verified**: SQLite database `colmap_hd_db.db` (26.36 GB) successfully preserved 100% of extracted SIFT keypoints, descriptors, and pairwise verified 2-view geometries across all 9,814 HD drone video frames (up to pair `Image 9813 <-> Image 9814`).
+- **Added**: Automatic step-skipping logic to resume directly from Step 4 (`colmap mapper`) without re-running heavy feature extraction or matching.
+
 
 ### `v1.2.0` - 2026-08-03
 - **Added**: Dedicated Read-Only Presentation Page (`viewer.html`) defaulting to 200 ft flyover view, 1.0x terrain exaggeration, and automatic 3D drone splat overlay.
