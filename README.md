@@ -1,6 +1,6 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v1.4.0`  
+**Version**: `v1.5.0`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
 **Live GitHub Pages Demo (Editor)**: [https://kylebur.github.io/townleysplat/index.html](https://kylebur.github.io/townleysplat/index.html)  
@@ -39,9 +39,9 @@ python3 -m http.server 8080
 
 ## 📝 Change Log
 
-### `v1.4.0` - 2026-08-05
-- **Updated**: Default `splatParticleSize` set to `4.0` in `app.js` and `terrain_alignment_config.json` for rich, contiguous volumetric 3D Gaussian Splat visualization.
-- **Pushed**: Updated alignment settings and 212,975-point model to GitHub main branch.
+### `v1.5.0` - 2026-08-05
+- **Added**: High-Density 5 FPS Photogrammetry Pipeline (`process_high_density_photogrammetry.py`) sampling ~1,637 keyframes (5 frames/sec) with 12,288 max SIFT features/frame targeting 1,000,000+ 3D Gaussian Splats.
+
 
 
 
