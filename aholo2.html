@@ -1,0 +1,130 @@
+<!-- 
+  AHOLO 2.0 3D GAUSSIAN SPLAT ENGINE & DENSE SURFACE VIEWER
+  Version: v2.0.0
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aholo 2.0 Surface Engine (v2.0.0)</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Three.js and OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <style>
+    /* Aholo 2.0 Specific UI Enhancements */
+    .aholo2-badge {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.9), rgba(168, 85, 247, 0.9));
+      color: #ffffff;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 10px rgba(236, 72, 153, 0.4);
+      display: inline-block;
+      margin-left: 8px;
+    }
+    .aholo-stats-card {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(236, 72, 153, 0.3);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: #f8fafc;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+    .aholo-stats-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .aholo-stats-label {
+      color: #94a3b8;
+    }
+    .aholo-stats-val {
+      color: #f472b6;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="viewer-mode">
+
+  <!-- Main 3D Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- Corner Version Badge -->
+  <div class="version-badge-gui">v2.0.0</div>
+
+  <!-- Top Navigation & Title Bar -->
+  <header class="glass-header">
+    <div class="header-title">
+      <div class="logo-icon">✨</div>
+      <div>
+        <h1>Aholo 2.0 Surface Engine <span class="aholo2-badge">Dense 3DGS</span></h1>
+        <span class="subtitle">Volumetric Surface Reconstruction • Continuous Rooflines & Canopy Detail</span>
+      </div>
+    </div>
+
+    <div class="header-center-badges">
+      <span class="badge badge-accent" id="aholo-status-badge">⚡ 3DGS Surface Density Active</span>
+    </div>
+
+    <div class="header-actions">
+      <button id="btn-recenter" class="btn btn-primary">
+        <span class="icon">🎯</span> Recenter View
+      </button>
+      <a href="aholo.html" class="btn btn-secondary">
+        <span class="icon">✨</span> Aholo 1.0
+      </a>
+      <a href="viewer.html" class="btn btn-secondary">
+        <span class="icon">🚁</span> 200 ft Flyover
+      </a>
+      <a href="index.html" class="btn btn-secondary">
+        <span class="icon">⚙️</span> Editor
+      </a>
+    </div>
+  </header>
+
+  <!-- Aholo Spatial Intelligence Metrics Card -->
+  <div class="aholo-stats-card">
+    <div class="aholo-stats-line">
+      <span class="aholo-stats-label">Aholo Engine:</span>
+      <span class="aholo-stats-val">v2.0.0 Volumetric Surface 3DGS</span>
+    </div>
+    <div class="aholo-stats-line">
+      <span class="aholo-stats-label">Surface Splats:</span>
+      <span class="aholo-stats-val" id="aholo-splat-count">Loading 3D Gaussians...</span>
+    </div>
+    <div class="aholo-stats-line">
+      <span class="aholo-stats-label">Render Rate:</span>
+      <span class="aholo-stats-val" id="aholo-fps">60 FPS</span>
+    </div>
+    <div class="aholo-stats-line">
+      <span class="aholo-stats-label">Base Plane Lock:</span>
+      <span class="aholo-stats-val">DEM Ground Surface Locked</span>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast" class="toast hidden">Initializing Aholo 2.0 Surface Engine...</div>
+
+  <!-- Main Application Logic -->
+  <script src="aholo2.js?v=2.0.0"></script>
+</body>
+</html>

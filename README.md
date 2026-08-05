@@ -1,8 +1,9 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v1.7.6`  
+**Version**: `v2.0.0`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
-**Live Aholo 3DGS Engine**: [https://kylebur.github.io/townleysplat/aholo.html](https://kylebur.github.io/townleysplat/aholo.html)  
+**Live Aholo 2.0 Dense Engine**: [https://kylebur.github.io/townleysplat/aholo2.html](https://kylebur.github.io/townleysplat/aholo2.html)  
+**Live Aholo 1.0 3DGS Engine**: [https://kylebur.github.io/townleysplat/aholo.html](https://kylebur.github.io/townleysplat/aholo.html)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
 **Live GitHub Pages Demo (Editor)**: [https://kylebur.github.io/townleysplat/index.html](https://kylebur.github.io/townleysplat/index.html)  
 
@@ -15,11 +16,11 @@
 
 ## ✨ Features
 
-- **✨ Aholo 3DGS Spatial Engine (`aholo.html`)**: Parallel standalone web app rendering the 655,186 3D Gaussian Splat model and DEM terrain elevation using high-performance WebGL 3DGS shaders, real-time FPS spatial metrics, and ground-anchored navigation.
+- **✨ Aholo 2.0 Dense Surface Engine (`aholo2.html`)**: Parallel standalone web app rendering **758,344 dense 3D Gaussian Surface Splats** generated via KD-Tree spatial tangent covariance expansion, capturing continuous rooflines, building walls, and foliage canopies without altering the demonstration `aholo.html` viewer.
+- **✨ Aholo 1.0 3DGS Spatial Engine (`aholo.html`)**: Standalone web app rendering the 655,186 3D Gaussian Splat model and DEM terrain elevation using high-performance WebGL 3DGS shaders and spatial HUD metrics.
 - **🚁 200 ft Flyover Presentation Mode (`viewer.html`)**: Read-only presentation mode defaulting to a 200 ft altitude flyover view, 1.0x physical height scale, and active 3D Gaussian Splat drone layer.
 - **🚶 Interactive Walk Mode (`index.html`)**: First-person ground-level walkthrough at 1:1 human scale with Arrow/WASD controls, mouse-look pointer lock, jump physics, and bilinear elevation ground collision.
 - **📐 Real-Time Texture Alignment HUD**: Interactive matrix transform controls (Scale X/Y, Offset X/Y, Rotation, Opacity, Wireframe, DEM Elevation Tint).
-- **🕹️ Decoupled 6-DOF Pivot Hierarchy**: 3-tier pivot hierarchy (`splatPivot` -> `splatYawGroup` -> `splatPitchGroup` -> `splatRollGroup` -> `splatMesh`) eliminating Euler gimbal coupling for independent Compass Yaw, Tilt Pitch, and Bank Roll.
 
 ---
 
@@ -32,7 +33,8 @@ python3 -m http.server 8080
 ```
 
 ### Access Points
-- **Aholo 3DGS Viewer Engine**: [http://localhost:8080/aholo.html](http://localhost:8080/aholo.html)
+- **Aholo 2.0 Dense Surface Engine**: [http://localhost:8080/aholo2.html](http://localhost:8080/aholo2.html)
+- **Aholo 1.0 3DGS Engine**: [http://localhost:8080/aholo.html](http://localhost:8080/aholo.html)
 - **Read-Only 200 ft Flyover View**: [http://localhost:8080/viewer.html](http://localhost:8080/viewer.html)
 - **Alignment & Controls Editor**: [http://localhost:8080/index.html](http://localhost:8080/index.html)
 
@@ -40,8 +42,9 @@ python3 -m http.server 8080
 
 ## 📝 Change Log
 
-### `v1.7.6` - 2026-08-05
-- **Fixed**: Implemented 2-pass noise splat filter in `aholo.js` and `app.js` removing uncalibrated black/dark noise splats (`luminance < 0.14`) and tightening Y-altitude outlier rejection to `2.0 * stddev`, stripping floating black artifacts above tree canopies.
+### `v2.0.0` - 2026-08-05
+- **Added**: Built **Aholo 2.0 Surface Engine** (`process_aholo_3dgs.py`, `aholo2.html`, `aholo2.js`), generating **758,344 dense volumetric surface Gaussians** (`aholo2_reconstruction.splat`) using local KD-Tree neighborhood covariance & tangent expansion. Continuously reconstructs rooflines and tree canopy detail while preserving `aholo.html` and baseline datasets untouched.
+
 
 ### `v1.7.5` - 2026-08-05
 - **Fixed**: Implemented 2D Canvas Color Saturation Engine (+50% Saturation, +20% Contrast filter) and high-contrast ambient lighting (`0.25` ambient + `0.25` hemi + `1.25` sun) in `aholo.js` to bring out deep, rich, vivid aerial map colors.
