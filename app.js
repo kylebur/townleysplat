@@ -1,6 +1,6 @@
 /**
  * 3D TERRAIN EXPLORER & REAL-TIME TEXTURE ALIGNMENT TOOL
- * Version: v1.7.2
+ * Version: v1.7.3
  * Built with Three.js & Soft Radial Gaussian Splatting
  */
 

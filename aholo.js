@@ -1,6 +1,6 @@
 /**
  * AHOLO 3D GAUSSIAN SPLAT ENGINE & SPATIAL INTELLIGENCE VIEWER
- * Version: v1.7.2
+ * Version: v1.7.3
  * 
  * Standalone high-performance 3D Gaussian Splatting & DEM spatial viewer.
  */
@@ -66,7 +66,6 @@ function initAholoEngine() {
 function initThree() {
   const container = document.getElementById('canvas-container');
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0b0f19);
 
   const centerX = state.widthM / 2;
   const centerZ = state.heightM / 2;
@@ -85,36 +84,37 @@ function initThree() {
   orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
   orbitControls.enableDamping = true;
   orbitControls.dampingFactor = 0.05;
-  orbitControls.screenSpacePanning = false; // Lock panning to horizontal base plane
+  orbitControls.screenSpacePanning = false; // Lock panning strictly to horizontal base X-Z ground plane
   orbitControls.maxPolarAngle = Math.PI / 2 - 0.01;
   const initialTargetY = getTerrainHeightAt(centerX, centerZ);
   orbitControls.target.set(centerX, initialTargetY, centerZ);
 
-  // Ambient & Directional Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
   scene.add(ambientLight);
 
   const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
   hemiLight.position.set(0, 500, 0);
   scene.add(hemiLight);
 
-  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.3);
+  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.4);
   sunLight.position.set(state.widthM * 0.5, 600, state.heightM * 0.5);
+  sunLight.castShadow = true;
   scene.add(sunLight);
 
-  // Sky Dome
+  // Sky Dome (Sky Blue)
   const skyGeo = new THREE.SphereGeometry(6000, 32, 15);
   const skyMat = new THREE.MeshBasicMaterial({ color: 0x87ceeb, side: THREE.BackSide });
   scene.add(new THREE.Mesh(skyGeo, skyMat));
 
-  // Load Aerial Satellite Texture with sRGB Color Encoding
+  // Load Aerial Satellite Texture (Exact match to app.js)
   const textureLoader = new THREE.TextureLoader();
   satelliteTexture = textureLoader.load('stitched_screenshots_clean.png', (tex) => {
-    tex.encoding = THREE.sRGBEncoding; // Enforce sRGB color space to prevent washed-out colors
     tex.wrapS = THREE.ClampToEdgeWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
     tex.minFilter = THREE.LinearMipmapLinearFilter;
     tex.magFilter = THREE.LinearFilter;
+    tex.generateMipmaps = true;
     tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
     updateTextureTransform();
   });
@@ -188,36 +188,53 @@ function getTerrainHeightAt(x, z) {
 function buildTerrainMesh() {
   if (terrainMesh) scene.remove(terrainMesh);
 
-  terrainGeo = new THREE.PlaneGeometry(state.widthM, state.heightM, state.cols - 1, state.rows - 1);
-  terrainGeo.rotateX(-Math.PI / 2);
-  terrainGeo.translate(state.widthM / 2, 0, state.heightM / 2);
+  const cols = state.cols;
+  const rows = state.rows;
+  const widthM = state.widthM;
+  const heightM = state.heightM;
+
+  terrainGeo = new THREE.PlaneGeometry(widthM, heightM, cols - 1, rows - 1);
+  terrainGeo.rotateX(-Math.PI / 2); // Horizontal XZ plane
+  terrainGeo.translate(widthM / 2, 0, heightM / 2); // Origin at (0,0)
 
   const posAttr = terrainGeo.attributes.position;
-  for (let i = 0; i < posAttr.count; i++) {
-    const x = posAttr.getX(i);
-    const z = posAttr.getZ(i);
-    posAttr.setY(i, getTerrainHeightAt(x, z));
+  const elevs = state.demData.elevations;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const idx = r * cols + c;
+      const elev = elevs[r][c];
+      posAttr.setY(idx, elev * state.heightScale);
+    }
   }
   terrainGeo.computeVertexNormals();
 
   terrainMat = new THREE.MeshStandardMaterial({
     map: satelliteTexture,
-    roughness: 0.8,
-    metalness: 0.1
+    roughness: 0.75,
+    metalness: 0.1,
+    flatShading: false,
+    side: THREE.DoubleSide
   });
 
   terrainMesh = new THREE.Mesh(terrainGeo, terrainMat);
+  terrainMesh.receiveShadow = true;
+  terrainMesh.castShadow = true;
   scene.add(terrainMesh);
 }
 
 function updateTextureTransform() {
   if (!satelliteTexture) return;
-  satelliteTexture.matrixAutoUpdate = false;
-  satelliteTexture.matrix.identity()
-    .translate(-0.5, -0.5)
-    .scale(1 / state.scaleX, 1 / state.scaleY)
-    .rotate(state.rotationDeg * Math.PI / 180)
-    .translate(0.5 + state.offsetX, 0.5 + state.offsetY);
+  const rad = (state.rotationDeg * Math.PI) / 180;
+  satelliteTexture.center.set(0.5, 0.5);
+  satelliteTexture.rotation = rad;
+  satelliteTexture.repeat.set(state.scaleX, state.scaleY);
+  satelliteTexture.offset.set(state.offsetX, state.offsetY);
+  satelliteTexture.needsUpdate = true;
+
+  if (terrainMat) {
+    terrainMat.map = satelliteTexture;
+    terrainMat.needsUpdate = true;
+  }
 }
 
 function loadAlignmentAndSplat() {
@@ -356,6 +373,9 @@ function updateSplatTransform() {
   splatPitchGroup.rotation.x = (state.splatRotX * Math.PI) / 180;
   splatRollGroup.rotation.z = (state.splatRotZ * Math.PI) / 180;
   splatMesh.scale.setScalar(state.splatScale);
+  if (splatMesh.material) {
+    splatMesh.material.size = state.splatParticleSize;
+  }
 }
 
 function animate() {
