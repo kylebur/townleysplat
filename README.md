@@ -1,6 +1,6 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v1.6.0`  
+**Version**: `v1.6.1`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
 **Live GitHub Pages Demo (Editor)**: [https://kylebur.github.io/townleysplat/index.html](https://kylebur.github.io/townleysplat/index.html)  
@@ -39,11 +39,9 @@ python3 -m http.server 8080
 
 ## 📝 Change Log
 
-### `v1.6.0` - 2026-08-05
-- **Fixed**: Locked OrbitControls panning strictly to the horizontal base plane (`screenSpacePanning = false`), preventing right-click panning from tilting off into mid-air.
-- **Fixed**: Disabled raycasting on `splatMesh` so mouse navigation interactions and double-clicking target the base ground terrain mesh exclusively.
-- **Added**: Double-click canvas listener to seamlessly recenter the orbit target on any double-clicked terrain ground location.
-- **Added**: Statistical 2-pass outlier noise filter during `.splat` loading, stripping high-altitude floating sky noise splats ($> 2.8 \sigma_y$).
+### `v1.6.1` - 2026-08-05
+- **Fixed**: Anchored `orbitControls.target.y` strictly to the DEM ground surface elevation (`getTerrainHeightAt(targetX, targetZ)`), eliminating phantom mid-air anchor points and restoring smooth ground-level zooming and right-click slewing.
+
 
 
 

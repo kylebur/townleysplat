@@ -1,6 +1,6 @@
 /**
  * 3D TERRAIN EXPLORER & REAL-TIME TEXTURE ALIGNMENT TOOL
- * Version: v1.6.0
+ * Version: v1.6.1
  * Built with Three.js & Soft Radial Gaussian Splatting
  */
 
@@ -147,7 +147,8 @@ function initThree() {
   orbitControls.dampingFactor = 0.05;
   orbitControls.screenSpacePanning = false; // Lock panning strictly to horizontal base X-Z ground plane
   orbitControls.maxPolarAngle = Math.PI / 2 - 0.01; // don't go below ground
-  orbitControls.target.set(centerX, 20, centerZ);
+  const initialTargetY = getTerrainHeightAt(centerX, centerZ);
+  orbitControls.target.set(centerX, initialTargetY, centerZ);
   orbitControls.enabled = (state.mode === 'fly');
 
   // Ambient & Sun Lighting
@@ -626,7 +627,10 @@ function animate() {
 
   if (state.mode === 'walk') {
     updateWalkPhysics(delta);
-  } else {
+  } else if (orbitControls) {
+    // Continuously anchor OrbitControls target Y height to ground terrain layer elevation
+    const groundY = getTerrainHeightAt(orbitControls.target.x, orbitControls.target.z);
+    orbitControls.target.y = groundY;
     orbitControls.update();
   }
 
@@ -1076,21 +1080,22 @@ async function loadSavedAlignment() {
     }
 
     if (config.cameraPosX !== undefined && config.cameraPosX !== null && orbitControls) {
-      // Restore exact saved camera position & orbit target angle
-      orbitControls.target.set(config.targetPosX, config.targetPosY, config.targetPosZ);
+      // Restore exact saved camera position & orbit target angle, anchored to ground terrain height
+      const groundTargetY = getTerrainHeightAt(config.targetPosX, config.targetPosZ);
+      orbitControls.target.set(config.targetPosX, groundTargetY, config.targetPosZ);
       camera.position.set(config.cameraPosX, config.cameraPosY, config.cameraPosZ);
-      camera.lookAt(config.targetPosX, config.targetPosY, config.targetPosZ);
+      camera.lookAt(config.targetPosX, groundTargetY, config.targetPosZ);
       orbitControls.update();
     } else if (isViewer && orbitControls) {
       const targetX = state.splatPosX || (state.widthM / 2);
       const targetZ = state.splatPosZ || (state.heightM / 2);
-      const targetY = Math.max(0, state.splatPosY || 10);
+      const targetY = getTerrainHeightAt(targetX, targetZ);
       const flyoverAltM = 60.96; // 200 ft altitude
 
       const camX = targetX - 90;
       const camZ = targetZ + 110;
       const groundAtCam = getTerrainHeightAt(camX, camZ);
-      const camY = Math.max(groundAtCam + flyoverAltM, targetY + flyoverAltM + 10);
+      const camY = groundAtCam + flyoverAltM;
 
       orbitControls.target.set(targetX, targetY, targetZ);
       camera.position.set(camX, camY, camZ);
