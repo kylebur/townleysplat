@@ -1,6 +1,6 @@
 /**
  * AHOLO 3D GAUSSIAN SPLAT ENGINE & SPATIAL INTELLIGENCE VIEWER
- * Version: v1.7.0
+ * Version: v1.7.1
  * 
  * Standalone high-performance 3D Gaussian Splatting & DEM spatial viewer.
  */
@@ -28,7 +28,7 @@ const state = {
 };
 
 let scene, camera, renderer, orbitControls;
-let terrainMesh, satelliteTexture, splatMesh;
+let terrainMesh, terrainGeo, terrainMat, satelliteTexture, splatMesh;
 let splatPivot, splatYawGroup, splatPitchGroup, splatRollGroup;
 let clock = new THREE.Clock();
 let frameCount = 0, lastFpsTime = performance.now();
@@ -41,21 +41,24 @@ document.addEventListener('DOMContentLoaded', () => {
 function initAholoEngine() {
   showToast('Initializing Aholo 3DGS Engine...');
   
-  fetch('elevation_tile.json?t=' + Date.now())
-    .then(res => res.json())
+  fetch('dem_data.json?t=' + Date.now())
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
     .then(data => {
-      state.demData = data.data;
-      state.cols = data.width;
-      state.rows = data.height;
-      state.widthM = (data.width - 1) * data.cellSize;
-      state.heightM = (data.height - 1) * data.cellSize;
+      state.demData = data;
+      state.cols = data.cols;
+      state.rows = data.rows;
+      state.widthM = data.width_m;
+      state.heightM = data.height_m;
 
       initThree();
       loadAlignmentAndSplat();
       animate();
     })
     .catch(err => {
-      console.error('Failed to load DEM elevation:', err);
+      console.error('Failed to load dem_data.json:', err);
       showToast('Error loading elevation data');
     });
 }
@@ -84,7 +87,8 @@ function initThree() {
   orbitControls.dampingFactor = 0.05;
   orbitControls.screenSpacePanning = false; // Lock panning to horizontal base plane
   orbitControls.maxPolarAngle = Math.PI / 2 - 0.01;
-  orbitControls.target.set(centerX, getTerrainHeightAt(centerX, centerZ), centerZ);
+  const initialTargetY = getTerrainHeightAt(centerX, centerZ);
+  orbitControls.target.set(centerX, initialTargetY, centerZ);
 
   // Lighting
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
@@ -143,30 +147,37 @@ function initThree() {
 }
 
 function getTerrainHeightAt(x, z) {
-  if (!state.demData) return 0;
-  const cellSize = 3.0;
-  const c = x / cellSize;
-  const r = z / cellSize;
+  if (!state.demData || !state.demData.elevations) return 0;
+  
+  const widthM = state.widthM;
+  const heightM = state.heightM;
+  const cols = state.cols;
+  const rows = state.rows;
 
-  const c0 = Math.floor(c);
-  const r0 = Math.floor(r);
-  const c1 = Math.min(c0 + 1, state.cols - 1);
-  const r1 = Math.min(r0 + 1, state.rows - 1);
+  const clampedX = Math.max(0, Math.min(widthM, x));
+  const clampedZ = Math.max(0, Math.min(heightM, z));
 
-  if (c0 < 0 || c0 >= state.cols || r0 < 0 || r0 >= state.rows) return 0;
+  const colF = (clampedX / widthM) * (cols - 1);
+  const rowF = (clampedZ / heightM) * (rows - 1);
 
-  const tx = c - c0;
-  const tz = r - r0;
+  const c0 = Math.floor(colF);
+  const c1 = Math.min(cols - 1, c0 + 1);
+  const r0 = Math.floor(rowF);
+  const r1 = Math.min(rows - 1, r0 + 1);
 
-  const h00 = state.demData[r0 * state.cols + c0] || 0;
-  const h10 = state.demData[r0 * state.cols + c1] || 0;
-  const h01 = state.demData[r1 * state.cols + c0] || 0;
-  const h11 = state.demData[r1 * state.cols + c1] || 0;
+  const tx = colF - c0;
+  const tz = rowF - r0;
 
-  const top = h00 * (1 - tx) + h10 * tx;
-  const bot = h01 * (1 - tx) + h11 * tx;
+  const elevs = state.demData.elevations;
+  const h00 = elevs[r0][c0];
+  const h10 = elevs[r0][c1];
+  const h01 = elevs[r1][c0];
+  const h11 = elevs[r1][c1];
 
-  return (top * (1 - tz) + bot * tz) * state.heightScale;
+  const hTop = h00 * (1 - tx) + h10 * tx;
+  const hBot = h01 * (1 - tx) + h11 * tx;
+
+  return (hTop * (1 - tz) + hBot * tz) * state.heightScale;
 }
 
 function buildTerrainMesh() {

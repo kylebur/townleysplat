@@ -1,6 +1,6 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v1.7.0`  
+**Version**: `v1.7.1`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
 **Live Aholo 3DGS Engine**: [https://kylebur.github.io/townleysplat/aholo.html](https://kylebur.github.io/townleysplat/aholo.html)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
@@ -40,8 +40,9 @@ python3 -m http.server 8080
 
 ## 📝 Change Log
 
-### `v1.7.0` - 2026-08-05
-- **Added**: Built parallel standalone **Aholo 3DGS Spatial Web Engine** (`aholo.html` & `aholo.js`), rendering the 655,186 3D Gaussian Splat model and DEM elevation data with real-time FPS performance monitoring, glassmorphic HUD spatial metrics, and base-plane ground-locked navigation.
+### `v1.7.1` - 2026-08-05
+- **Fixed**: Corrected DEM elevation dataset fetch path in `aholo.js` from `elevation_tile.json` to `dem_data.json` with bilinear 2D elevation grid sampling (`elevations[r][c]`).
+
 
 
 
