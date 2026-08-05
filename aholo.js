@@ -1,6 +1,6 @@
 /**
  * AHOLO 3D GAUSSIAN SPLAT ENGINE & SPATIAL INTELLIGENCE VIEWER
- * Version: v1.7.4
+ * Version: v1.7.5
  * 
  * Standalone high-performance 3D Gaussian Splatting & DEM spatial viewer.
  */
@@ -89,15 +89,15 @@ function initThree() {
   const initialTargetY = getTerrainHeightAt(centerX, centerZ);
   orbitControls.target.set(centerX, initialTargetY, centerZ);
 
-  // Balanced Lighting for Rich Color Contrast & Shadow Depth
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+  // High-Contrast Vibrant Lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
   scene.add(ambientLight);
 
-  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.35);
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x222222, 0.25);
   hemiLight.position.set(0, 500, 0);
   scene.add(hemiLight);
 
-  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.0);
+  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.25);
   sunLight.position.set(state.widthM * 0.5, 600, state.heightM * 0.5);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.width = 2048;
@@ -116,17 +116,28 @@ function initThree() {
   const skyMat = new THREE.MeshBasicMaterial({ color: 0x87ceeb, side: THREE.BackSide });
   scene.add(new THREE.Mesh(skyGeo, skyMat));
 
-  // Load Aerial Satellite Texture (Exact match to app.js)
-  const textureLoader = new THREE.TextureLoader();
-  satelliteTexture = textureLoader.load('stitched_screenshots_clean.png', (tex) => {
-    tex.wrapS = THREE.ClampToEdgeWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    tex.minFilter = THREE.LinearMipmapLinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-    tex.generateMipmaps = true;
-    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  // Load & Color-Boost Aerial Satellite Texture (+50% Saturation, +20% Contrast)
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.src = 'stitched_screenshots_clean.png';
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.filter = 'saturate(1.50) contrast(1.20) brightness(1.02)';
+    ctx.drawImage(img, 0, 0);
+
+    satelliteTexture = new THREE.CanvasTexture(canvas);
+    satelliteTexture.wrapS = THREE.ClampToEdgeWrapping;
+    satelliteTexture.wrapT = THREE.ClampToEdgeWrapping;
+    satelliteTexture.minFilter = THREE.LinearMipmapLinearFilter;
+    satelliteTexture.magFilter = THREE.LinearFilter;
+    satelliteTexture.generateMipmaps = true;
+    satelliteTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
     updateTextureTransform();
-  });
+  };
 
   buildTerrainMesh();
 
