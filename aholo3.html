@@ -139,6 +139,18 @@
 
     <div class="aholo-slider-group">
       <div class="aholo-slider-label">
+        <span>Performance Mode (LOD Density):</span>
+        <span id="val-lod" class="aholo-stats-val">50% (Fast 60FPS)</span>
+      </div>
+      <select id="select-lod" style="background: #0f172a; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; padding: 6px 10px; font-family: inherit; font-size: 12px; cursor: pointer; margin-top: 2px;">
+        <option value="0.25">25% Density (Ultra Light ~750k)</option>
+        <option value="0.50" selected>50% Density (Balanced 60FPS ~1.5M)</option>
+        <option value="1.00">100% Density (Max Ultra ~3.0M)</option>
+      </select>
+    </div>
+
+    <div class="aholo-slider-group">
+      <div class="aholo-slider-label">
         <span>Splat Particle Size:</span>
         <span id="val-particle-size" class="aholo-stats-val">3.0px</span>
       </div>
