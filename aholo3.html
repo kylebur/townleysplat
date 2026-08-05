@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<!-- 
+  AHOLO 3.0 PURE 3D GAUSSIAN SPLAT ENGINE
+  Version: v3.0.0
+  Pure 3DGS Photogrammetry Model Viewer (No Terrain Basemap / DEM)
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aholo 3.0 Pure 3D Gaussian Splats (v3.0.0)</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Three.js and OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #030712;
+      color: #f8fafc;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+    .aholo-stats-card {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 14px;
+      padding: 18px 22px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      min-width: 280px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .aholo-stats-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .aholo-stats-label {
+      color: #94a3b8;
+    }
+    .aholo-stats-val {
+      color: #38bdf8;
+      font-weight: 600;
+    }
+    .aholo-slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .aholo-slider-label {
+      display: flex;
+      justify-content: space-between;
+      color: #e2e8f0;
+      font-size: 12px;
+    }
+    .aholo-slider {
+      width: 100%;
+      accent-color: #38bdf8;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main 3D Canvas -->
+  <div id="canvas-container"></div>
+
+  <!-- Corner Version Badge -->
+  <div class="version-badge-gui">v3.0.0</div>
+
+  <!-- Header & Navigation -->
+  <header class="glass-header">
+    <div class="header-title">
+      <div class="logo-icon">✨</div>
+      <div>
+        <h1>Aholo 3.0 Engine <span class="version-sub">v3.0.0</span></h1>
+        <span class="subtitle">Pure 3D Gaussian Splats • Autonomous Point Cloud Geometry</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button id="btn-recenter" class="btn btn-primary">
+        <span class="icon">🎯</span> Recenter Focus
+      </button>
+      <a href="aholo2.html" class="btn btn-secondary">
+        <span class="icon">✨</span> Aholo 2.0
+      </a>
+      <a href="aholo.html" class="btn btn-secondary">
+        <span class="icon">✨</span> Aholo 1.0
+      </a>
+      <a href="viewer.html" class="btn btn-secondary">
+        <span class="icon">🚁</span> 200 ft Flyover
+      </a>
+      <a href="index.html" class="btn btn-secondary">
+        <span class="icon">⚙️</span> Editor
+      </a>
+    </div>
+  </header>
+
+  <!-- Aholo 3.0 Pure Splat HUD -->
+  <div class="aholo-stats-card">
+    <div class="aholo-stats-line">
+      <span class="aholo-stats-label">Aholo Engine:</span>
+      <span class="aholo-stats-val">v3.0.0 Pure 3DGS</span>
+    </div>
+    <div class="aholo-stats-line">
+      <span class="aholo-stats-label">3D Splat Count:</span>
+      <span class="aholo-stats-val" id="aholo-splat-count">Loading Splats...</span>
+    </div>
+    <div class="aholo-stats-line">
+      <span class="aholo-stats-label">Render Rate:</span>
+      <span class="aholo-stats-val" id="aholo-fps">60 FPS</span>
+    </div>
+
+    <div class="aholo-slider-group">
+      <div class="aholo-slider-label">
+        <span>Splat Particle Size:</span>
+        <span id="val-particle-size" class="aholo-stats-val">3.0px</span>
+      </div>
+      <input type="range" id="slider-particle-size" class="aholo-slider" min="0.5" max="8.0" step="0.1" value="3.0">
+    </div>
+
+    <div class="aholo-slider-group">
+      <div class="aholo-slider-label">
+        <span>Splat Opacity:</span>
+        <span id="val-opacity" class="aholo-stats-val">1.0</span>
+      </div>
+      <input type="range" id="slider-opacity" class="aholo-slider" min="0.1" max="1.0" step="0.05" value="1.0">
+    </div>
+
+    <div class="aholo-stats-line" style="margin-top: 4px;">
+      <span class="aholo-stats-label">Basemap Terrain:</span>
+      <span class="aholo-stats-val" style="color: #4ade80;">Disabled (Pure 3DGS)</span>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="toast hidden">Aholo 3.0 Engine Ready</div>
+
+  <!-- Script Execution -->
+  <script src="aholo3.js?v=3.0.0"></script>
+</body>
+</html>

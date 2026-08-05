@@ -146,14 +146,22 @@ function initThree() {
 
   const btnRecenter = document.getElementById('btn-recenter');
   if (btnRecenter) {
-    btnRecenter.addEventListener('click', () => {
-      const targetX = state.splatPosX || (state.widthM / 2);
-      const targetZ = state.splatPosZ || (state.heightM / 2);
-      const targetY = getTerrainHeightAt(targetX, targetZ);
-      orbitControls.target.set(targetX, targetY, targetZ);
-      camera.position.set(targetX - 90, targetY + 60, targetZ + 110);
-      orbitControls.update();
-      showToast('Centered on Aholo 2.0 Splat Focus');
+    btnRecenter.addEventListener('click', recenterCamera);
+  }
+
+  const sliderSize = document.getElementById('slider-particle-size');
+  const valSize = document.getElementById('val-particle-size');
+  if (sliderSize) {
+    sliderSize.value = state.splatParticleSize ?? 2.2;
+    if (valSize) valSize.textContent = `${(state.splatParticleSize ?? 2.2).toFixed(1)}px`;
+    sliderSize.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      state.splatParticleSize = val;
+      if (valSize) valSize.textContent = `${val.toFixed(1)}px`;
+      if (splatMesh && splatMesh.material) {
+        splatMesh.material.size = val;
+        splatMesh.material.needsUpdate = true;
+      }
     });
   }
 
@@ -169,6 +177,16 @@ function initThree() {
       showToast(`Aholo 2.0 target centered on (${Math.round(hitPt.x)}, ${Math.round(hitPt.z)})`);
     }
   });
+}
+
+function recenterCamera() {
+  const targetX = state.splatPosX || (state.widthM / 2);
+  const targetZ = state.splatPosZ || (state.heightM / 2);
+  const targetY = getTerrainHeightAt(targetX, targetZ);
+  orbitControls.target.set(targetX, targetY, targetZ);
+  camera.position.set(targetX - 90, targetY + 60, targetZ + 110);
+  orbitControls.update();
+  showToast('Centered on Aholo 2.0 Splat Focus');
 }
 
 function getTerrainHeightAt(x, z) {

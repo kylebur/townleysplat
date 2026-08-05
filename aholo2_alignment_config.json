@@ -6,13 +6,13 @@
   "rotationDeg": 0.0,
   "heightScale": 1.0,
   "splatScale": 55.6,
-  "splatParticleSize": 3.5,
+  "splatParticleSize": 2.2,
   "splatRotX": 158.0,
   "splatRotY": -90.0,
   "splatRotZ": 0.0,
   "splatPosX": 188.0,
   "splatPosY": 69.0,
   "splatPosZ": 255.0,
-  "numSplats": 1056513,
-  "timestamp": "2026-08-05T17:04:34Z"
+  "numSplats": 3000000,
+  "timestamp": "2026-08-05T17:25:04Z"
 }

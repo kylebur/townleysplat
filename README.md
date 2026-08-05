@@ -1,7 +1,8 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v2.0.0`  
+**Version**: `v3.0.0`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
+**Live Aholo 3.0 Pure 3DGS Engine**: [https://kylebur.github.io/townleysplat/aholo3.html](https://kylebur.github.io/townleysplat/aholo3.html)  
 **Live Aholo 2.0 Dense Engine**: [https://kylebur.github.io/townleysplat/aholo2.html](https://kylebur.github.io/townleysplat/aholo2.html)  
 **Live Aholo 1.0 3DGS Engine**: [https://kylebur.github.io/townleysplat/aholo.html](https://kylebur.github.io/townleysplat/aholo.html)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
@@ -16,11 +17,11 @@
 
 ## ✨ Features
 
-- **✨ Aholo 2.0 Dense Surface Engine (`aholo2.html`)**: Parallel standalone web app rendering **758,344 dense 3D Gaussian Surface Splats** generated via KD-Tree spatial tangent covariance expansion, capturing continuous rooflines, building walls, and foliage canopies without altering the demonstration `aholo.html` viewer.
+- **✨ Aholo 3.0 Pure 3DGS Engine (`aholo3.html`)**: Standalone WebGL viewer focusing **exclusively on the 3D Gaussian Splat point cloud geometry** (with basemap terrain disabled), featuring auto-centering bounding box origin alignment, interactive Splat Particle Size slider (`0.5px` - `8.0px`), and Opacity controls.
+- **✨ Aholo 2.0 Dense Surface Engine (`aholo2.html`)**: Parallel web app rendering dense 3D Gaussian Surface Splats generated via Multi-View Stereo 2D-3D keyframe pixel triangulation.
 - **✨ Aholo 1.0 3DGS Spatial Engine (`aholo.html`)**: Standalone web app rendering the 655,186 3D Gaussian Splat model and DEM terrain elevation using high-performance WebGL 3DGS shaders and spatial HUD metrics.
 - **🚁 200 ft Flyover Presentation Mode (`viewer.html`)**: Read-only presentation mode defaulting to a 200 ft altitude flyover view, 1.0x physical height scale, and active 3D Gaussian Splat drone layer.
 - **🚶 Interactive Walk Mode (`index.html`)**: First-person ground-level walkthrough at 1:1 human scale with Arrow/WASD controls, mouse-look pointer lock, jump physics, and bilinear elevation ground collision.
-- **📐 Real-Time Texture Alignment HUD**: Interactive matrix transform controls (Scale X/Y, Offset X/Y, Rotation, Opacity, Wireframe, DEM Elevation Tint).
 
 ---
 
@@ -33,6 +34,7 @@ python3 -m http.server 8080
 ```
 
 ### Access Points
+- **Aholo 3.0 Pure 3DGS Engine**: [http://localhost:8080/aholo3.html](http://localhost:8080/aholo3.html)
 - **Aholo 2.0 Dense Surface Engine**: [http://localhost:8080/aholo2.html](http://localhost:8080/aholo2.html)
 - **Aholo 1.0 3DGS Engine**: [http://localhost:8080/aholo.html](http://localhost:8080/aholo.html)
 - **Read-Only 200 ft Flyover View**: [http://localhost:8080/viewer.html](http://localhost:8080/viewer.html)
@@ -42,8 +44,8 @@ python3 -m http.server 8080
 
 ## 📝 Change Log
 
-### `v2.0.0` - 2026-08-05
-- **Added**: Built **Aholo 2.0 Surface Engine** (`process_aholo_3dgs.py`, `aholo2.html`, `aholo2.js`), generating **758,344 dense volumetric surface Gaussians** (`aholo2_reconstruction.splat`) using local KD-Tree neighborhood covariance & tangent expansion. Continuously reconstructs rooflines and tree canopy detail while preserving `aholo.html` and baseline datasets untouched.
+### `v3.0.0` - 2026-08-05
+- **Added**: Built **Aholo 3.0 Pure 3DGS Engine** (`aholo3.html`, `aholo3.js`), focusing exclusively on 3D Gaussian Splat photogrammetry geometry without DEM basemap or satellite ground plane distractions. Includes auto-centering bounding box origin alignment, Splat Particle Size slider, and Opacity controls.
 
 
 ### `v1.7.5` - 2026-08-05

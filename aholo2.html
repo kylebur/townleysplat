@@ -89,6 +89,9 @@
       <button id="btn-recenter" class="btn btn-primary">
         <span class="icon">🎯</span> Recenter View
       </button>
+      <a href="aholo3.html" class="btn btn-secondary">
+        <span class="icon">✨</span> Aholo 3.0 Pure
+      </a>
       <a href="aholo.html" class="btn btn-secondary">
         <span class="icon">✨</span> Aholo 1.0
       </a>
@@ -115,9 +118,16 @@
       <span class="aholo-stats-label">Render Rate:</span>
       <span class="aholo-stats-val" id="aholo-fps">60 FPS</span>
     </div>
-    <div class="aholo-stats-line">
-      <span class="aholo-stats-label">Base Plane Lock:</span>
-      <span class="aholo-stats-val">DEM Ground Surface Locked</span>
+    <div class="aholo-stats-line" style="margin-top: 8px; flex-direction: column; align-items: stretch; gap: 4px;">
+      <div style="display: flex; justify-content: space-between;">
+        <span class="aholo-stats-label">Splat Particle Size:</span>
+        <span class="aholo-stats-val" id="val-particle-size">2.2px</span>
+      </div>
+      <input type="range" id="slider-particle-size" min="1.0" max="6.0" step="0.1" value="2.2" style="width: 100%; cursor: pointer;">
+    </div>
+    <div class="aholo-stats-line" style="margin-top: 6px;">
+      <span class="aholo-stats-label">Navigation Mode:</span>
+      <span class="aholo-stats-val">Ground-Anchored Orbit/Pan</span>
     </div>
   </div>
 
