@@ -1,6 +1,6 @@
 /**
  * 3D TERRAIN EXPLORER & REAL-TIME TEXTURE ALIGNMENT TOOL
- * Version: v1.3.2
+ * Version: v1.3.3
  * Built with Three.js & Soft Radial Gaussian Splatting
  */
 
@@ -746,15 +746,15 @@ function initUI() {
   if (chkSplat) {
     chkSplat.addEventListener('change', (e) => {
       state.showSplatLayer = e.target.checked;
-      if (state.showSplatLayer && !splatMesh) {
-        // Auto-load generated drone reconstruction splat if available
-        fetch('drone_reconstruction.splat')
+      if (state.showSplatLayer) {
+        // Auto-load generated drone reconstruction splat with timestamp cache-buster
+        fetch('drone_reconstruction.splat?t=' + Date.now())
           .then(res => res.ok ? res.arrayBuffer() : null)
           .then(buffer => {
             if (buffer) parseAndCreateSplatMesh(buffer, 'drone_reconstruction.splat');
           }).catch(err => console.log('No default splat file found:', err));
       } else if (splatMesh) {
-        splatMesh.visible = state.showSplatLayer;
+        splatMesh.visible = false;
       }
     });
   }
@@ -1044,8 +1044,8 @@ async function loadSavedAlignment() {
     updateTextureTransform();
 
     // Auto-load 3D Splat Mesh if Splat Layer is enabled
-    if (state.showSplatLayer && !splatMesh) {
-      fetch('drone_reconstruction.splat')
+    if (state.showSplatLayer) {
+      fetch('drone_reconstruction.splat?t=' + Date.now())
         .then(res => res.ok ? res.arrayBuffer() : null)
         .then(buffer => {
           if (buffer) parseAndCreateSplatMesh(buffer, 'drone_reconstruction.splat');
