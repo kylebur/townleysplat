@@ -1,6 +1,6 @@
 /**
  * AHOLO 3D GAUSSIAN SPLAT ENGINE & SPATIAL INTELLIGENCE VIEWER
- * Version: v1.7.5
+ * Version: v1.7.6
  * 
  * Standalone high-performance 3D Gaussian Splatting & DEM spatial viewer.
  */
@@ -312,16 +312,26 @@ function parseAndCreateAholoSplat(buffer) {
   const varY = Math.max(0, (sumY2 / numSplats) - (meanY * meanY));
   const stdY = Math.sqrt(varY);
 
+  // Pass 2: Filter out high Y floating outliers (> 2.0 stddev) and uncalibrated black noise splats
   const validPositions = [];
   const validColors = [];
 
   for (let i = 0; i < numSplats; i++) {
     const y = rawY[i];
-    if (Math.abs(y - meanY) > 2.8 * stdY) continue;
+    // Reject stray floating sky splats high in the air above tree canopy
+    if (Math.abs(y - meanY) > 2.0 * stdY) continue;
 
     const off = i * 32;
+    const r = bytes[off + 24] / 255;
+    const g = bytes[off + 25] / 255;
+    const b = bytes[off + 26] / 255;
+
+    // Filter out black/dark noise splats (uncalibrated keypoints in dark/sky regions)
+    const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+    if (luminance < 0.14 || (r < 0.12 && g < 0.12 && b < 0.12)) continue;
+
     validPositions.push(rawX[i], y, rawZ[i]);
-    validColors.push(bytes[off + 24] / 255, bytes[off + 25] / 255, bytes[off + 26] / 255);
+    validColors.push(r, g, b);
   }
 
   const cleanNumSplats = validPositions.length / 3;

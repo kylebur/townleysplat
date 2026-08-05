@@ -1,6 +1,6 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v1.7.5`  
+**Version**: `v1.7.6`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
 **Live Aholo 3DGS Engine**: [https://kylebur.github.io/townleysplat/aholo.html](https://kylebur.github.io/townleysplat/aholo.html)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
@@ -40,13 +40,11 @@ python3 -m http.server 8080
 
 ## 📝 Change Log
 
+### `v1.7.6` - 2026-08-05
+- **Fixed**: Implemented 2-pass noise splat filter in `aholo.js` and `app.js` removing uncalibrated black/dark noise splats (`luminance < 0.14`) and tightening Y-altitude outlier rejection to `2.0 * stddev`, stripping floating black artifacts above tree canopies.
+
 ### `v1.7.5` - 2026-08-05
 - **Fixed**: Implemented 2D Canvas Color Saturation Engine (+50% Saturation, +20% Contrast filter) and high-contrast ambient lighting (`0.25` ambient + `0.25` hemi + `1.25` sun) in `aholo.js` to bring out deep, rich, vivid aerial map colors.
-
-
-
-
-
 
 
 
