@@ -1,6 +1,6 @@
 /**
  * 3D TERRAIN EXPLORER & REAL-TIME TEXTURE ALIGNMENT TOOL
- * Version: v1.3.1
+ * Version: v1.3.2
  * Built with Three.js & Soft Radial Gaussian Splatting
  */
 
@@ -18,7 +18,7 @@ const state = {
   // Splat Layer State (6-DOF Transform & Scale)
   showSplatLayer: false,
   splatScale: 1.0,
-  splatParticleSize: 0.18,
+  splatParticleSize: 0.45,
   splatRotX: 0.0,
   splatRotY: 0.0,
   splatRotZ: 0.0,
@@ -1144,17 +1144,18 @@ function parseAndCreateSplatMesh(buffer, filename) {
 
   if (!window._gaussianSplatTexture) {
     const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = 64;
+    canvas.width = 128;
+    canvas.height = 128;
     const ctx = canvas.getContext('2d');
-    const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
     grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
-    grad.addColorStop(0.25, 'rgba(255, 255, 255, 0.85)');
-    grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.45)');
-    grad.addColorStop(0.75, 'rgba(255, 255, 255, 0.12)');
+    grad.addColorStop(0.2, 'rgba(255, 255, 255, 0.9)');
+    grad.addColorStop(0.45, 'rgba(255, 255, 255, 0.55)');
+    grad.addColorStop(0.7, 'rgba(255, 255, 255, 0.2)');
+    grad.addColorStop(0.9, 'rgba(255, 255, 255, 0.05)');
     grad.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 64, 64);
+    ctx.fillRect(0, 0, 128, 128);
     const tex = new THREE.CanvasTexture(canvas);
     tex.minFilter = THREE.LinearMipmapLinearFilter;
     tex.magFilter = THREE.LinearFilter;
@@ -1167,6 +1168,7 @@ function parseAndCreateSplatMesh(buffer, filename) {
     map: window._gaussianSplatTexture,
     vertexColors: true,
     transparent: true,
+    alphaTest: 0.005,
     depthWrite: false,
     opacity: 0.95,
     blending: THREE.NormalBlending
