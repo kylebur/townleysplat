@@ -1,6 +1,6 @@
 /**
  * AHOLO 3D GAUSSIAN SPLAT ENGINE & SPATIAL INTELLIGENCE VIEWER
- * Version: v1.7.3
+ * Version: v1.7.4
  * 
  * Standalone high-performance 3D Gaussian Splatting & DEM spatial viewer.
  */
@@ -89,17 +89,26 @@ function initThree() {
   const initialTargetY = getTerrainHeightAt(centerX, centerZ);
   orbitControls.target.set(centerX, initialTargetY, centerZ);
 
-  // Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+  // Balanced Lighting for Rich Color Contrast & Shadow Depth
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
   scene.add(ambientLight);
 
-  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.35);
   hemiLight.position.set(0, 500, 0);
   scene.add(hemiLight);
 
-  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.4);
+  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.0);
   sunLight.position.set(state.widthM * 0.5, 600, state.heightM * 0.5);
   sunLight.castShadow = true;
+  sunLight.shadow.mapSize.width = 2048;
+  sunLight.shadow.mapSize.height = 2048;
+  sunLight.shadow.camera.near = 10;
+  sunLight.shadow.camera.far = 1000;
+  const d = Math.max(state.widthM, state.heightM);
+  sunLight.shadow.camera.left = -d;
+  sunLight.shadow.camera.right = d;
+  sunLight.shadow.camera.top = d;
+  sunLight.shadow.camera.bottom = -d;
   scene.add(sunLight);
 
   // Sky Dome (Sky Blue)

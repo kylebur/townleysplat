@@ -1,6 +1,6 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v1.7.3`  
+**Version**: `v1.7.4`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
 **Live Aholo 3DGS Engine**: [https://kylebur.github.io/townleysplat/aholo.html](https://kylebur.github.io/townleysplat/aholo.html)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
@@ -40,9 +40,9 @@ python3 -m http.server 8080
 
 ## 📝 Change Log
 
-### `v1.7.3` - 2026-08-05
-- **Fixed**: Corrected aerial satellite texture UV matrix transform (`center`, `rotation`, `repeat`, `offset`) in `aholo.js` to match `app.js`, aligning the background satellite map scale 1:1 with the 3D Gaussian Splat model layer.
-- **Fixed**: Restored rich green grass and vivid satellite color by removing double-gamma color conversion.
+### `v1.7.4` - 2026-08-05
+- **Fixed**: Configured DirectionalLight shadow camera bounds (`sunLight.shadow.camera`) and balanced ambient light intensity (`0.45` ambient + `0.35` hemi) in `aholo.js` to eliminate flat overexposure and restore rich ground contrast and shadow relief.
+
 
 
 
