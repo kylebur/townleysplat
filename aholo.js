@@ -1,6 +1,6 @@
 /**
  * AHOLO 3D GAUSSIAN SPLAT ENGINE & SPATIAL INTELLIGENCE VIEWER
- * Version: v1.7.1
+ * Version: v1.7.2
  * 
  * Standalone high-performance 3D Gaussian Splatting & DEM spatial viewer.
  */
@@ -90,22 +90,27 @@ function initThree() {
   const initialTargetY = getTerrainHeightAt(centerX, centerZ);
   orbitControls.target.set(centerX, initialTargetY, centerZ);
 
-  // Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
+  // Ambient & Directional Lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
   scene.add(ambientLight);
 
-  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.4);
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+  hemiLight.position.set(0, 500, 0);
+  scene.add(hemiLight);
+
+  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.3);
   sunLight.position.set(state.widthM * 0.5, 600, state.heightM * 0.5);
   scene.add(sunLight);
 
   // Sky Dome
   const skyGeo = new THREE.SphereGeometry(6000, 32, 15);
-  const skyMat = new THREE.MeshBasicMaterial({ color: 0x0b0f19, side: THREE.BackSide });
+  const skyMat = new THREE.MeshBasicMaterial({ color: 0x87ceeb, side: THREE.BackSide });
   scene.add(new THREE.Mesh(skyGeo, skyMat));
 
-  // Load Aerial Satellite Texture
+  // Load Aerial Satellite Texture with sRGB Color Encoding
   const textureLoader = new THREE.TextureLoader();
   satelliteTexture = textureLoader.load('stitched_screenshots_clean.png', (tex) => {
+    tex.encoding = THREE.sRGBEncoding; // Enforce sRGB color space to prevent washed-out colors
     tex.wrapS = THREE.ClampToEdgeWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
     tex.minFilter = THREE.LinearMipmapLinearFilter;

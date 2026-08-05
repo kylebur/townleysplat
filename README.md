@@ -1,6 +1,6 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v1.7.1`  
+**Version**: `v1.7.2`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
 **Live Aholo 3DGS Engine**: [https://kylebur.github.io/townleysplat/aholo.html](https://kylebur.github.io/townleysplat/aholo.html)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
@@ -40,8 +40,9 @@ python3 -m http.server 8080
 
 ## 📝 Change Log
 
-### `v1.7.1` - 2026-08-05
-- **Fixed**: Corrected DEM elevation dataset fetch path in `aholo.js` from `elevation_tile.json` to `dem_data.json` with bilinear 2D elevation grid sampling (`elevations[r][c]`).
+### `v1.7.2` - 2026-08-05
+- **Fixed**: Enforced `sRGBEncoding` (`tex.encoding = THREE.sRGBEncoding`) on aerial satellite textures in `aholo.js` and added sky dome hemisphere lighting to eliminate desaturated/washed-out terrain colors.
+
 
 
 
