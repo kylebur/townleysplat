@@ -1,6 +1,6 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v1.3.0`  
+**Version**: `v1.3.1`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
 **Live GitHub Pages Demo (Editor)**: [https://kylebur.github.io/townleysplat/index.html](https://kylebur.github.io/townleysplat/index.html)  
@@ -39,9 +39,14 @@ python3 -m http.server 8080
 
 ## 📝 Change Log
 
+### `v1.3.1` - 2026-08-04
+- **Added**: Soft Radial Gaussian Splat Sprite Generator (`createGaussianSplatTexture()`) replacing hard square box point particles with anti-aliased, smooth 2D Gaussian density falloff disks.
+- **Updated**: `PointsMaterial` with `depthWrite: false` and `NormalBlending` to eliminate pixel edge artifacts and achieve realistic volumetric 3D splat blending.
+
 ### `v1.3.0` - 2026-08-04
 - **Added**: High-speed 1 fps keyframe photogrammetry pipeline script (`process_keyframes_photogrammetry.py`) targeting ~300k-500k 3D tie points across ~327 keyframes.
 - **Added**: Sequential feature matching with overlap 15 and loop-closure detection.
+
 
 ### `v1.2.4` - 2026-08-04
 - **Added**: COLMAP crash recovery detection & database audit script in `process_hd_photogrammetry.py`.

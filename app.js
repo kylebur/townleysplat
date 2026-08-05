@@ -1,7 +1,7 @@
 /**
  * 3D TERRAIN EXPLORER & REAL-TIME TEXTURE ALIGNMENT TOOL
- * Version: v1.2.0
- * Built with Three.js & Gaussian Splatting
+ * Version: v1.3.1
+ * Built with Three.js & Soft Radial Gaussian Splatting
  */
 
 // Global App State
@@ -1142,11 +1142,34 @@ function parseAndCreateSplatMesh(buffer, filename) {
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
+  if (!window._gaussianSplatTexture) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+    grad.addColorStop(0.25, 'rgba(255, 255, 255, 0.85)');
+    grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.45)');
+    grad.addColorStop(0.75, 'rgba(255, 255, 255, 0.12)');
+    grad.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 64, 64);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.generateMipmaps = true;
+    window._gaussianSplatTexture = tex;
+  }
+
   const mat = new THREE.PointsMaterial({
     size: state.splatParticleSize,
+    map: window._gaussianSplatTexture,
     vertexColors: true,
     transparent: true,
-    opacity: 0.95
+    depthWrite: false,
+    opacity: 0.95,
+    blending: THREE.NormalBlending
   });
 
   splatMesh = new THREE.Points(geo, mat);
