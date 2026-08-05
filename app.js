@@ -1,6 +1,6 @@
 /**
  * 3D TERRAIN EXPLORER & REAL-TIME TEXTURE ALIGNMENT TOOL
- * Version: v1.3.3
+ * Version: v1.4.0
  * Built with Three.js & Soft Radial Gaussian Splatting
  */
 
@@ -18,7 +18,7 @@ const state = {
   // Splat Layer State (6-DOF Transform & Scale)
   showSplatLayer: false,
   splatScale: 1.0,
-  splatParticleSize: 0.45,
+  splatParticleSize: 4.0,
   splatRotX: 0.0,
   splatRotY: 0.0,
   splatRotZ: 0.0,
@@ -1030,7 +1030,7 @@ async function loadSavedAlignment() {
     }
 
     state.splatScale = config.splatScale ?? 1.0;
-    state.splatParticleSize = config.splatParticleSize ?? 0.18;
+    state.splatParticleSize = config.splatParticleSize ?? 4.0;
     state.splatRotX = config.splatRotX ?? 0.0;
     state.splatRotY = config.splatRotY ?? 0.0;
     state.splatRotZ = config.splatRotZ ?? 0.0;

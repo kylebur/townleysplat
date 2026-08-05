@@ -1,6 +1,6 @@
 # 🚁 3D Land Explorer & Drone Gaussian Splat Photogrammetry
 
-**Version**: `v1.3.3`  
+**Version**: `v1.4.0`  
 **GitHub Repository**: [git@github.com:kylebur/townleysplat.git](https://github.com/kylebur/townleysplat)  
 **Live GitHub Pages Demo (Viewer)**: [https://kylebur.github.io/townleysplat/viewer.html](https://kylebur.github.io/townleysplat/viewer.html)  
 **Live GitHub Pages Demo (Editor)**: [https://kylebur.github.io/townleysplat/index.html](https://kylebur.github.io/townleysplat/index.html)  
@@ -39,9 +39,10 @@ python3 -m http.server 8080
 
 ## 📝 Change Log
 
-### `v1.3.3` - 2026-08-05
-- **Fixed**: Added timestamp cache buster (`drone_reconstruction.splat?t=...`) to `fetch` calls in `app.js` to force the browser to immediately load the new 212,975-point `.splat` file instead of serving stale cached HTTP responses.
-- **Fixed**: Force re-fetching `.splat` files when `loadSavedAlignment()` initializes across browser sessions.
+### `v1.4.0` - 2026-08-05
+- **Updated**: Default `splatParticleSize` set to `4.0` in `app.js` and `terrain_alignment_config.json` for rich, contiguous volumetric 3D Gaussian Splat visualization.
+- **Pushed**: Updated alignment settings and 212,975-point model to GitHub main branch.
+
 
 
 ### `v1.3.0` - 2026-08-04
