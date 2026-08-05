@@ -1,13 +1,13 @@
 /**
  * AHOLO 3.0 PURE 3D GAUSSIAN SPLAT ENGINE
- * Version: v3.0.1
+ * Version: v3.0.2
  * Pure 3DGS Photogrammetry Model Viewer (No Basemap Terrain / DEM)
- * High-Performance 60FPS WebGL Renderer
+ * High-Performance 60FPS WebGL Renderer with 3D Orientation Matrix
  */
 
 // Application State
 const state = {
-  splatParticleSize: 3.0,
+  splatParticleSize: 0.35, // Correct physical splat radius
   splatOpacity: 1.0,
   lodRatio: 0.50, // Default to 50% density for smooth 60 FPS
   numSplats: 0,
@@ -18,7 +18,7 @@ const state = {
 
 // Global WebGL Variables
 let scene, camera, renderer, orbitControls;
-let splatMesh;
+let splatMesh, splatGroup;
 let lastFrameTime = performance.now();
 let frameCount = 0;
 
@@ -27,14 +27,14 @@ function init() {
   const container = document.getElementById('canvas-container');
   if (!container) return;
 
-  // Scene setup with sleek dark background
+  // Scene setup with sleek dark space background
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x030712);
-  scene.fog = new THREE.FogExp2(0x030712, 0.002);
+  scene.fog = new THREE.FogExp2(0x030712, 0.0015);
 
   // Camera setup
-  camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.set(0, 45, 90);
+  camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 2000);
+  camera.position.set(0, 30, 80);
 
   // Renderer setup
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
@@ -47,12 +47,12 @@ function init() {
   orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
   orbitControls.enableDamping = true;
   orbitControls.dampingFactor = 0.05;
-  orbitControls.maxPolarAngle = Math.PI / 2 + 0.1;
+  orbitControls.maxPolarAngle = Math.PI / 2 + 0.15;
   orbitControls.minDistance = 2.0;
-  orbitControls.maxDistance = 500.0;
+  orbitControls.maxDistance = 600.0;
 
   // Ambient & Directional Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
   scene.add(ambientLight);
 
   const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
@@ -94,10 +94,12 @@ function initUI() {
   const sliderSize = document.getElementById('slider-particle-size');
   const valSize = document.getElementById('val-particle-size');
   if (sliderSize) {
+    sliderSize.value = state.splatParticleSize;
+    if (valSize) valSize.textContent = `${state.splatParticleSize.toFixed(2)}`;
     sliderSize.addEventListener('input', (e) => {
       const val = parseFloat(e.target.value);
       state.splatParticleSize = val;
-      if (valSize) valSize.textContent = `${val.toFixed(1)}px`;
+      if (valSize) valSize.textContent = `${val.toFixed(2)}`;
       if (splatMesh && splatMesh.material) {
         splatMesh.material.size = val;
         splatMesh.material.needsUpdate = true;
@@ -140,9 +142,10 @@ function loadPure3DGSModel() {
     });
 }
 
-// Parse Binary Splat & Build Centered 3DGS Geometry with High Performance Shader
+// Parse Binary Splat & Apply 3D Orientation Transformation
 function parseAndBuildPure3DGS(buffer) {
-  if (splatMesh) scene.remove(splatMesh);
+  if (splatGroup) scene.remove(splatGroup);
+  splatGroup = new THREE.Group();
 
   const bytes = new Uint8Array(buffer);
   const totalSplats = Math.floor(bytes.length / 32);
@@ -175,9 +178,15 @@ function parseAndBuildPure3DGS(buffer) {
 
   state.splatCenter.set(cx, cy, cz);
 
+  // Orientation Transformation Angles (Pitch = 158°, Yaw = -90°)
+  const radX = (158.0 * Math.PI) / 180;
+  const radY = (-90.0 * Math.PI) / 180;
+
+  const cosX = Math.cos(radX), sinX = Math.sin(radX);
+  const cosY = Math.cos(radY), sinY = Math.sin(radY);
+
   const validPositions = [];
   const validColors = [];
-
   let maxDistSq = 0;
   const lodStep = Math.max(1, Math.round(1.0 / state.lodRatio));
 
@@ -189,15 +198,25 @@ function parseAndBuildPure3DGS(buffer) {
     const lum = 0.299 * r + 0.587 * g + 0.114 * b;
     if (lum < 0.10) continue; // Noise filter
 
-    // Center coordinates around origin (0,0,0)
-    const px = rawX[i] - cx;
-    const py = rawY[i] - cy;
-    const pz = rawZ[i] - cz;
+    // Shift relative to centroid
+    const rx = rawX[i] - cx;
+    const ry = rawY[i] - cy;
+    const rz = rawZ[i] - cz;
 
-    const dSq = px * px + py * py + pz * pz;
+    // Apply Yaw (Y-axis) rotation
+    const x1 = rx * cosY + rz * sinY;
+    const y1 = ry;
+    const z1 = -rx * sinY + rz * cosY;
+
+    // Apply Pitch (X-axis) rotation
+    const x2 = x1;
+    const y2 = y1 * cosX - z1 * sinX;
+    const z2 = y1 * sinX + z1 * cosX;
+
+    const dSq = x2 * x2 + y2 * y2 + z2 * z2;
     if (dSq > maxDistSq) maxDistSq = dSq;
 
-    validPositions.push(px, py, pz);
+    validPositions.push(x2, y2, z2);
     validColors.push(r, g, b);
   }
 
@@ -227,23 +246,24 @@ function parseAndBuildPure3DGS(buffer) {
     window._aholo3GaussianTextureFast = tex;
   }
 
-  // HIGH-PERFORMANCE POINTS MATERIAL (depthWrite: true eliminates GPU overdraw)
+  // Points material with physical size attenuation & Z-buffer depth write
   const mat = new THREE.PointsMaterial({
     size: state.splatParticleSize,
     map: window._aholo3GaussianTextureFast,
     vertexColors: true,
     transparent: true,
-    alphaTest: 0.12,  // High performance alpha cutoff
-    depthWrite: true, // ELIMINATES OVERDRAW DISCARD THRASHING (60 FPS)
+    alphaTest: 0.10,
+    depthWrite: true,
     depthTest: true,
     opacity: state.splatOpacity,
     sizeAttenuation: true
   });
 
   splatMesh = new THREE.Points(geo, mat);
-  scene.add(splatMesh);
+  splatGroup.add(splatMesh);
+  scene.add(splatGroup);
 
-  // Position camera cleanly relative to model bounding radius
+  // Recenter camera cleanly around upright 3D model
   recenterCamera();
 
   const countEl = document.getElementById('aholo-splat-count');
@@ -255,7 +275,7 @@ function parseAndBuildPure3DGS(buffer) {
 function recenterCamera() {
   orbitControls.target.set(0, 0, 0);
   const r = state.splatBoundingRadius || 40.0;
-  camera.position.set(0, r * 0.6, r * 1.4);
+  camera.position.set(0, r * 0.5, r * 1.3);
   orbitControls.update();
   showToast('Centered on Pure 3DGS Model');
 }
